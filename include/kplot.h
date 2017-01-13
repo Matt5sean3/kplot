@@ -171,7 +171,10 @@ struct	kplotcfg {
 struct 	kdata;
 struct	kplot;
 
-__BEGIN_DECLS
+/* __BEGIN_DECLS */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void		 kdata_destroy(struct kdata *);
 int		 kdata_get(const struct kdata *, size_t, struct kpair *);
@@ -241,6 +244,9 @@ int		 kplot_get_datacfg(struct kplot *, size_t,
 struct kplotcfg	*kplot_get_plotcfg(struct kplot *);
 
 
-__END_DECLS
+/* __END_DECLS */
+#ifdef __cplusplus
+}
+#endif
 
 #endif
