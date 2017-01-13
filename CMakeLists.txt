@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4)
 
 # === PROJECT INFORMATION ===
-project(kplot)
+project(kplot C)
 
 set(KPLOT_MAJOR_VERSION 0)
 set(KPLOT_MINOR_VERSION 1)
@@ -16,6 +16,7 @@ find_path(CAIRO_INCLUDE_PATH
   NAMES
     cairo.h
   PATHS
+    "${CMAKE_FIND_ROOT_PATH}/include/cairo"
     "C:/usr/include/cairo"
     "/usr/include/cairo"
     "/usr/local/include/cairo"
@@ -25,6 +26,7 @@ find_library(CAIRO_LIBRARIES
   NAMES
     cairo
   PATHS
+    "${CMAKE_FIND_ROOT_PATH}/lib"
     "C:/usr/lib/cairo"
     "/usr/lib/cairo"
     "/usr/local/lib/cairo"
@@ -37,14 +39,35 @@ find_library(MATH_LIBRARIES
     "/lib"
     "/usr/lib"
   )
+if(NOT ${MATH_LIBRARIES})
+  # When the math libraries can't be found they're usually implicitly linked
+  set(MATH_LIBRARIES "")
+endif()
 
 include_directories(
   ${KPLOT_INCLUDE_DIR}
   ${CAIRO_INCLUDE_PATH}
   )
 
+# Needs libbsd but for cross-compiling can't do compile-run based tests
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  # Link in libbsd for Linux
+  find_library(BSD_LIBRARIES
+    NAMES
+      bsd
+    )
+  if(${BSD_LIBRARIES})
+    set(HAVE_REALLOCARRAY 1)
+  else()
+    set(HAVE_REALLOCARRAY 0)
+  endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  # Mainly want for mingw cross-compilation
+  set(HAVE_REALLOCARRAY 0)
+else()
+endif()
 # TODO Run tests for determining the value of HAVE_REALLOCARRAY
-set(HAVE_REALLOCARRAY 1)
 
 configure_file(
   ${KPLOT_INCLUDE_DIR}/compat.h.in
@@ -52,20 +75,6 @@ configure_file(
   )
 
 include_directories(${CMAKE_BINARY_DIR}/include)
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  # Link in libbsd for Linux
-  find_library(BSD_LIBRARIES
-    NAMES
-      bsd
-    )
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  # TODO port over to Windows if at all possible
-  set(BSD_LIBRARIES "")
-else()
-  # Hopefully you're on BSD if you're in here
-  set(BSD_LIBRARIES "")
-endif()
 
 # === LIBRARY ===
 add_library(kplot STATIC

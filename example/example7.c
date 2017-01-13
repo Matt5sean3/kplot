@@ -34,7 +34,12 @@ fill(size_t pos, struct kpair *val, void *dat)
 {
 
 	val->x = pos;
+#if defined(__unix__) || defined(__APPLE__) || defined(LIBBSD_STDLIB_H)
 	val->y = arc4random() / (double)UINT32_MAX;
+#else
+  /* Just use a non-BSD random generator */
+  val->y = (double)rand() / (double)RAND_MAX;
+#endif
 }
 
 int

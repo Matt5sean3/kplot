@@ -56,7 +56,19 @@ main(int argc, char *argv[])
 
 	for (i = 0; i < 10; i++) {
 		points1[i].x = time(NULL) + i * 24 * 60 * 60;
+#if defined(__unix__) || defined(__APPLE__) || defined(LIBBSD_STDLIB_H)
 		points1[i].y = arc4random_uniform(100);
+#else
+    /* Avoid the BSD specific code */
+    {
+      int rnum;
+      do { /* A quick implementation of random_uniform */
+        rnum = rand();
+      }
+      while(rnum > RAND_MAX - RAND_MAX % 100);
+		  points1[i].y = rnum % 100;
+    }
+#endif
 	}
 
 	kplotcfg_defaults(&cfg);

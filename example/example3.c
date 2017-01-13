@@ -51,8 +51,15 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 0; i < 1000; i++) {
+    double rnum;
+#if defined(__unix__) || defined(__APPLE__) || defined(LIBBSD_STDLIB_H)
+  	rnum = arc4random() / (double)UINT32_MAX;
+#else
+    /* Just use a non-BSD random generator */
+    rnum = (double)rand() / (double)RAND_MAX;
+#endif
 		c = kdata_hist_add(d, 
-			arc4random() / (double)UINT32_MAX, 1.0);
+			rnum / (double)UINT32_MAX, 1.0);
 		assert(c);
 	}
 
